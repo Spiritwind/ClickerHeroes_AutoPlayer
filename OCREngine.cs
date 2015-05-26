@@ -11,7 +11,7 @@ namespace clickerheroes.autoplayer
     /// <summary>
     /// Represents an OCR char
     /// </summary>
-    class Char
+    public class Char
     {
         /// <summary>
         /// The char value obtained through OCR
@@ -82,6 +82,8 @@ namespace clickerheroes.autoplayer
             int leftArea = 0, rightArea = 0;
             int groupsDownMiddleVertical = 0;
             int midwidth = 0;
+            int charSize = BoundingRect.Width * BoundingRect.Height;
+
             for (int i = BoundingRect.Left; i <= BoundingRect.Right; i++)
             {
                 for (int j = BoundingRect.Top; j <= BoundingRect.Bottom; j++)
@@ -157,17 +159,18 @@ namespace clickerheroes.autoplayer
                     if (totalArea < 0.0003571 * screentotalArea && specialcharsenabled) //(double)rightArea / leftArea < 1.1) //1.1256)
                     {
                         guessedchar = 'e';
-                    } else if ((double)rightArea / leftArea > 1.6160) //1.6   1.6177
+                    }
+                    else if (totalArea > 0.8 * charSize)
+                    {
+                        guessedchar = '8';
+                    }
+                    else if (totalArea < 0.71 * charSize)
                     {
                         guessedchar = '3';
                     }
-                    else if ((double)midwidth / BoundingRect.Width > 0.75) //1.2597)
-                    {
-                        guessedchar = '5';
-                    }
                     else
                     {
-                        guessedchar = '8';
+                        guessedchar = '5';
                     }
                     break;
                 case 1:
@@ -220,12 +223,12 @@ namespace clickerheroes.autoplayer
     /// <summary>
     /// Represents a string of Chars on screen in a single horizontal line
     /// </summary>
-    class Line
+    public class Line
     {
         /// <summary>
         /// All the chars on this line
         /// </summary>
-        private IEnumerable<Char> Characters;
+        public List<Char> Characters;
 
         /// <summary>
         /// The line's bounding rectangle
@@ -332,7 +335,7 @@ namespace clickerheroes.autoplayer
     /// <summary>
     /// Class which defines static methods for performing OCR on a bitmap.
     /// </summary>
-    class OCREngine
+    public class OCREngine
     {
         /// <summary>
         /// Performs OCR on a bitmap, reading the Chars and Lines present.
