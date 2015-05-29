@@ -32,6 +32,9 @@
             this.TaskBox = new System.Windows.Forms.TextBox();
             this.saveBtn = new System.Windows.Forms.Button();
             this.reloadBtn = new System.Windows.Forms.Button();
+            this.activeBtn = new System.Windows.Forms.Button();
+            this.idleBtn = new System.Windows.Forms.Button();
+            this.costBtn = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // TaskBox
@@ -40,6 +43,7 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.TaskBox.Location = new System.Drawing.Point(12, 12);
+            this.TaskBox.MaxLength = 2000000;
             this.TaskBox.Multiline = true;
             this.TaskBox.Name = "TaskBox";
             this.TaskBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
@@ -69,12 +73,45 @@
             this.reloadBtn.UseVisualStyleBackColor = true;
             this.reloadBtn.Click += new System.EventHandler(this.reloadBtn_Click);
             // 
+            // activeBtn
+            // 
+            this.activeBtn.Location = new System.Drawing.Point(13, 373);
+            this.activeBtn.Name = "activeBtn";
+            this.activeBtn.Size = new System.Drawing.Size(75, 23);
+            this.activeBtn.TabIndex = 3;
+            this.activeBtn.Text = "Active";
+            this.activeBtn.UseVisualStyleBackColor = true;
+            this.activeBtn.Click += new System.EventHandler(this.activeBtn_Click);
+            // 
+            // idleBtn
+            // 
+            this.idleBtn.Location = new System.Drawing.Point(94, 373);
+            this.idleBtn.Name = "idleBtn";
+            this.idleBtn.Size = new System.Drawing.Size(75, 23);
+            this.idleBtn.TabIndex = 4;
+            this.idleBtn.Text = "Idle";
+            this.idleBtn.UseVisualStyleBackColor = true;
+            this.idleBtn.Click += new System.EventHandler(this.idleBtn_Click);
+            // 
+            // costBtn
+            // 
+            this.costBtn.Location = new System.Drawing.Point(175, 373);
+            this.costBtn.Name = "costBtn";
+            this.costBtn.Size = new System.Drawing.Size(75, 23);
+            this.costBtn.TabIndex = 5;
+            this.costBtn.Text = "Cost";
+            this.costBtn.UseVisualStyleBackColor = true;
+            this.costBtn.Click += new System.EventHandler(this.costBtn_Click);
+            // 
             // TaskList
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(435, 405);
+            this.ClientSize = new System.Drawing.Size(435, 406);
+            this.Controls.Add(this.costBtn);
+            this.Controls.Add(this.idleBtn);
+            this.Controls.Add(this.activeBtn);
             this.Controls.Add(this.reloadBtn);
             this.Controls.Add(this.saveBtn);
             this.Controls.Add(this.TaskBox);
@@ -94,6 +131,9 @@
         private System.Windows.Forms.TextBox TaskBox;
         private System.Windows.Forms.Button saveBtn;
         private System.Windows.Forms.Button reloadBtn;
+        private System.Windows.Forms.Button activeBtn;
+        private System.Windows.Forms.Button idleBtn;
+        private System.Windows.Forms.Button costBtn;
 
     }
 }
