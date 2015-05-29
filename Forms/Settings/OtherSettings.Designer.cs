@@ -38,6 +38,7 @@
             this.saveBtn = new System.Windows.Forms.Button();
             this.maxRunDurationTxt = new System.Windows.Forms.TextBox();
             this.maxRunDurationLbl = new System.Windows.Forms.Label();
+            this.chkDoOcrLearning = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // loggingChk
@@ -99,7 +100,7 @@
             // 
             // saveBtn
             // 
-            this.saveBtn.Location = new System.Drawing.Point(45, 157);
+            this.saveBtn.Location = new System.Drawing.Point(45, 193);
             this.saveBtn.Name = "saveBtn";
             this.saveBtn.Size = new System.Drawing.Size(75, 23);
             this.saveBtn.TabIndex = 32;
@@ -123,11 +124,22 @@
             this.maxRunDurationLbl.TabIndex = 33;
             this.maxRunDurationLbl.Text = "Max run duration";
             // 
+            // chkDoOcrLearning
+            // 
+            this.chkDoOcrLearning.AutoSize = true;
+            this.chkDoOcrLearning.Location = new System.Drawing.Point(12, 156);
+            this.chkDoOcrLearning.Name = "chkDoOcrLearning";
+            this.chkDoOcrLearning.Size = new System.Drawing.Size(93, 17);
+            this.chkDoOcrLearning.TabIndex = 35;
+            this.chkDoOcrLearning.Text = "OCR Learning";
+            this.chkDoOcrLearning.UseVisualStyleBackColor = true;
+            // 
             // OtherSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(167, 189);
+            this.ClientSize = new System.Drawing.Size(167, 228);
+            this.Controls.Add(this.chkDoOcrLearning);
             this.Controls.Add(this.maxRunDurationTxt);
             this.Controls.Add(this.maxRunDurationLbl);
             this.Controls.Add(this.saveBtn);
@@ -161,5 +173,6 @@
         private System.Windows.Forms.Button saveBtn;
         private System.Windows.Forms.TextBox maxRunDurationTxt;
         private System.Windows.Forms.Label maxRunDurationLbl;
+        private System.Windows.Forms.CheckBox chkDoOcrLearning;
     }
 }

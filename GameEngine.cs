@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,14 +30,14 @@ namespace clickerheroes.autoplayer
 
         public double AllDPSMultiplier { get; set; }
 
-        public double CriticalChanceIncreas { get; set; }
+        public double CriticalChanceIncrease { get; set; }
 
         public double CriticalMultiplierIncrease { get; set; }
 
         public double GoldMultiplier { get; set; }
 
         public bool UnlocksSkill { get; set; }
-        
+
         public Upgrade(string name, int level, double cost, double heroDmgMultiplier = 1, double clickDmgMultiplier = 1, double dpsToClick = 0, double allDpsMultiplier = 1, bool skill = false, double criticalChanceIncrease = 0, double criticalMultiplierIncrease = 0, double goldMultiplier = 1)
         {
             Name = name;
@@ -46,7 +48,7 @@ namespace clickerheroes.autoplayer
             DpsToClickMultiplier = dpsToClick;
             AllDPSMultiplier = allDpsMultiplier;
             UnlocksSkill = skill;
-            CriticalChanceIncreas = criticalChanceIncrease;
+            CriticalChanceIncrease = criticalChanceIncrease;
             CriticalMultiplierIncrease = criticalMultiplierIncrease;
             GoldMultiplier = goldMultiplier;
         }
@@ -149,6 +151,94 @@ namespace clickerheroes.autoplayer
         /// The bottom-right point of the hero's name on screen, used to calculate upgrade and buy button offsets.
         /// </summary>
         public Point bottomright;
+
+        public double DpsToClick
+        {
+            get
+            {
+                var dps = 0d;
+                for (int i = 0; i < Hero.Upgrades.Length; i++)
+                {
+                    if (HasUpgrade(i) == 1)
+                    {
+                        dps += Hero.Upgrades[i].DpsToClickMultiplier;
+                    }
+                }
+                return dps;
+            }
+        }
+
+        public double DPS
+        {
+            get
+            {
+                var dps = Level * Hero.BaseDamage;
+                for (int i = 0; i < Hero.Upgrades.Length; i++)
+                {
+                    if (HasUpgrade(i) == 1)
+                    {
+                        dps *= Hero.Upgrades[i].HeroDamageMultiplier;
+                    }
+                }
+                if (Level > 200)
+                {
+                    dps *= 4 ^ (int)((Math.Min(Level, 4100) - 200) / 25);
+                }
+                if (Level >= 1000)
+                {
+                    dps *= Math.Pow(2.5d, (int)(Math.Min(Level, 4100) / 1000));
+                }
+                return dps;
+            }
+        }
+
+        public double AllDpsMultiplier
+        {
+            get
+            {
+                var mult = 1d;
+                for (int i = 0; i < Hero.Upgrades.Length; i++)
+                {
+                    if (HasUpgrade(i) == 1)
+                    {
+                        mult *= Hero.Upgrades[i].AllDPSMultiplier;
+                    }
+                }
+                return mult;
+            }
+        }
+
+        public double CriticalChance
+        {
+            get
+            {
+                var mult = 0d;
+                for (int i = 0; i < Hero.Upgrades.Length; i++)
+                {
+                    if (HasUpgrade(i) == 1)
+                    {
+                        mult += Hero.Upgrades[i].CriticalChanceIncrease;
+                    }
+                }
+                return mult;
+            }
+        }
+
+        public double CriticalMultiplierIncrease
+        {
+            get
+            {
+                var mult = 0d;
+                for (int i = 0; i < Hero.Upgrades.Length; i++)
+                {
+                    if (HasUpgrade(i) == 1)
+                    {
+                        mult += Hero.Upgrades[i].CriticalMultiplierIncrease;
+                    }
+                }
+                return mult;
+            }
+        }
 
         /// <summary>
         /// Gets a rectangle which encloses a hero's upgrade
@@ -264,14 +354,14 @@ namespace clickerheroes.autoplayer
     /// <summary>
     /// Contains static methods to obtain various states of the game, primarily current money and current heroes.
     /// </summary>
-    class GameEngine
+    public class GameEngine
     {
         public static IntPtr WindowHandle;
         /// <summary>
         ///  The heroes!
         /// </summary>
         static public Hero[] HeroList = {
-            new Hero("Cid, the Helpful Adventurer", 5, 0, 0.1904, new Upgrade[] { 
+            new Hero("Cid, the Helpful Adventurer", 5, 1, 0.1904, new Upgrade[] { 
                 new Upgrade("Big Clicks", 10, 100, clickDmgMultiplier: 2), 
                 new Upgrade("Clickstorm", 25, 250, skill: true), 
                 new Upgrade("Huge Clicks", 50, 1000, clickDmgMultiplier: 2), 
@@ -459,7 +549,7 @@ namespace clickerheroes.autoplayer
                 new Upgrade("Meditation", 10, 1.0E146, heroDmgMultiplier: 2), 
                 new Upgrade("Travel Boots", 25, 2.5E146, heroDmgMultiplier: 2), 
                 new Upgrade("Peacekeeper", 50, 1E147, heroDmgMultiplier: 2), 
-                new Upgrade("Blinding Light", 10, 8E147, heroDmgMultiplier: 2.5) }),
+                new Upgrade("Blinding Light", 100, 8E147, heroDmgMultiplier: 2.5) }),
             new Hero("Astrea", 1.0E160, 1.137E135, 0.0515, new Upgrade[] { 
                 new Upgrade("Pro-Aging", 10, 1.0E161, heroDmgMultiplier: 2), 
                 new Upgrade("Slice and Dice", 25, 2.5E161, heroDmgMultiplier: 2), 
@@ -691,7 +781,9 @@ namespace clickerheroes.autoplayer
         /// Defines the game play area, and calculates all other offsets from that
         /// </summary>
         /// <param name="playableArea"></param>
-        public static void SetPlayableArea(Rectangle playableArea) {
+        public static void SetPlayableArea(Rectangle playableArea)
+        {
+            OCREngine.SetPlayableArea(playableArea);
             PlayableArea = playableArea;
 
             // Calculate all other coordinates
@@ -833,14 +925,9 @@ namespace clickerheroes.autoplayer
         public static bool IsProgressModeOn()
         {
             Rectangle c = new Rectangle(ProgressButton.X - CandyWidth / 2, ProgressButton.Y - CandyHeight / 2, CandyWidth, CandyHeight);
-            using (Bitmap bitmap = new Bitmap(c.Width, c.Height))
+            using (Bitmap bitmap = GetImage(c))
             {
-                using (Graphics g = Graphics.FromImage(bitmap))
-                {
-                    g.CopyFromScreen(new Point(c.Left, c.Top), Point.Empty, c.Size);
-                }
-
-                if (OCREngine.GetBlobDensity(bitmap, new Rectangle(0, 0, bitmap.Width- 1, bitmap.Height - 1), new Color[] {
+                if (OCREngine.GetBlobDensity(bitmap, new Rectangle(0, 0, bitmap.Width - 1, bitmap.Height - 1), new Color[] {
                         Color.FromArgb(255, 255, 0, 0)
                         // put pumpkin pie thing here
                     }) > 0.0)
@@ -849,6 +936,60 @@ namespace clickerheroes.autoplayer
                 }
 
                 return true;
+            }
+        }
+
+        public static Bitmap GetImage(Rectangle rect)
+        {
+            if (Properties.Settings.Default.backgroundWindow && WindowHandle != IntPtr.Zero)
+            {
+                Imports.RECT rc;
+                Imports.GetWindowRect(WindowHandle, out rc);
+
+                Bitmap bmp = new Bitmap(rc.Width, rc.Height, PixelFormat.Format32bppArgb);
+                Graphics gfxBmp = Graphics.FromImage(bmp);
+                IntPtr hdcBitmap = gfxBmp.GetHdc();
+                bool succeeded = Imports.PrintWindow(WindowHandle, hdcBitmap, 0);
+                gfxBmp.ReleaseHdc(hdcBitmap);
+                if (!succeeded)
+                {
+                    gfxBmp.FillRectangle(new SolidBrush(Color.Gray), new Rectangle(Point.Empty, bmp.Size));
+                }
+                IntPtr hRgn = Imports.CreateRectRgn(0, 0, 0, 0);
+                Imports.GetWindowRgn(WindowHandle, hRgn);
+                Region region = Region.FromHrgn(hRgn);
+                if (!region.IsEmpty(gfxBmp))
+                {
+                    gfxBmp.ExcludeClip(region);
+                    gfxBmp.Clear(Color.Transparent);
+                }
+                gfxBmp.Dispose();
+
+                var point = new Imports.POINT();
+                Imports.ScreenToClient(WindowHandle, ref point);
+
+                var windowPos = new Imports.RECT();
+                Imports.GetWindowRect(WindowHandle, out windowPos);
+                var origin = new Imports.POINT();
+                Imports.ClientToScreen(WindowHandle, ref origin);
+
+                rect.Offset(point.X, point.Y);
+                rect.Offset(-windowPos.Left, -windowPos.Top);
+                rect.Offset(origin.X, origin.Y);
+
+                var img = bmp.Clone(rect, PixelFormat.Format32bppArgb);
+                //bmp.Save(@"D:\Data\Screenshot1.png", ImageFormat.Png);
+                //img.Save(string.Format(@"D:\Data\Snap{0}.png", Guid.NewGuid()), ImageFormat.Png);
+                return img;
+            }
+            else
+            {
+                var bmp = new Bitmap(rect.Width, rect.Height);
+                using (Graphics g = Graphics.FromImage(bmp))
+                {
+                    g.CopyFromScreen(new Point(rect.Left, rect.Top), Point.Empty, rect.Size);
+                }
+                return bmp;
             }
         }
 
@@ -861,13 +1002,8 @@ namespace clickerheroes.autoplayer
             Size s = MoneyArea.Size;
             double money = -1;
 
-            using (Bitmap bitmap = new Bitmap(s.Width, s.Height))
+            using (Bitmap bitmap = GetImage(MoneyArea))
             {
-                using (Graphics g = Graphics.FromImage(bitmap))
-                {
-                    g.CopyFromScreen(new Point(MoneyArea.Left, MoneyArea.Top), Point.Empty, s);
-                }
-
                 IEnumerable<Line> lines = OCREngine.OCRBitmap(bitmap, new Rectangle(0, 0, bitmap.Width, bitmap.Height), new Color[] {
                     Color.FromArgb(255, 254, 254, 254),
                     Color.FromArgb(255, 254, 254, 253)
@@ -890,6 +1026,23 @@ namespace clickerheroes.autoplayer
                     }
                 }
 
+                foreach (var line in lines)
+                {
+                    foreach (var chr in line.Characters)
+                    {
+                        var rect = chr.GetBoundingRectangle();
+                        using (var bmp = bitmap.Clone(rect, PixelFormat.Format32bppArgb))
+                        {
+                            var filename = string.Format(@"D:\Data\Characters\{0}-{1}-{2:0}\", chr.TotalArea, rect.Width, rect.Height);
+                            if (!Directory.Exists(filename))
+                            {
+                                Directory.CreateDirectory(filename);
+                            }
+                            bmp.Save(Path.Combine(filename, Guid.NewGuid() + ".png"), ImageFormat.Png);
+                        }
+                    }
+                }
+
                 return money;
             }
         }
@@ -902,21 +1055,16 @@ namespace clickerheroes.autoplayer
         {
             Size s = HeroesArea.Size;
 
-            using (Bitmap bitmap = new Bitmap(s.Width, s.Height))
+            using (Bitmap bitmap = GetImage(HeroesArea))
             {
-                using (Graphics g = Graphics.FromImage(bitmap))
-                {
-                    g.CopyFromScreen(new Point(HeroesArea.Left, HeroesArea.Top), Point.Empty, s);
-                }
-
-                using (LockBitmap lb = new LockBitmap(bitmap))
-                {
-                    List<Line> lines = OCREngine.OCRBitmap(lb, new Rectangle(0, 0, bitmap.Width, bitmap.Height), new Color[] {
+                List<Line> lines = OCREngine.OCRBitmap(bitmap, new Rectangle(0, 0, bitmap.Width, bitmap.Height), new Color[] {
                         Color.FromArgb(255, 254, 254, 254),
                         Color.FromArgb(255, 254, 254, 253),
                         Color.FromArgb(255, 102, 51, 204), // purple for gilded heroes
                     });
 
+                using (LockBitmap lb = new LockBitmap(bitmap))
+                {
                     ParsedHeroes ph = GameEngine.ParseHeroes(lines, lb);
                     if (ph == null)
                     {
@@ -930,6 +1078,23 @@ namespace clickerheroes.autoplayer
 
                     return ph;
                 }
+
+                foreach (var line in lines)
+                {
+                    foreach (var chr in line.Characters.Where(c => c.GuessedCharacter != '\0'))
+                    {
+                        var rect = chr.GetBoundingRectangle();
+                        using (var bmp = bitmap.Clone(rect, PixelFormat.Format32bppArgb))
+                        {
+                            var filename = string.Format(@"D:\Data\Characters\{0}-{1}-{2}\", chr.TotalArea, rect.Width, rect.Height);
+                            if (!Directory.Exists(filename))
+                            {
+                                Directory.CreateDirectory(filename);
+                            }
+                            bmp.Save(Path.Combine(filename, Guid.NewGuid() + ".png"), ImageFormat.Png);
+                        }
+                    }
+                }
             }
         }
 
@@ -939,14 +1104,15 @@ namespace clickerheroes.autoplayer
         /// <param name="lines"></param>
         /// <param name="lb"></param>
         /// <returns></returns>
-        private static ParsedHeroes ParseHeroes(List<Line> lines, LockBitmap lb)
+        public static ParsedHeroes ParseHeroes(List<Line> lines, LockBitmap lb)
         {
             ParsedHeroes parsedHeroes = new ParsedHeroes();
 
             if (lines.Count() == 0)
             {
                 return null;
-            } else if (lines.Count() <= 3)
+            }
+            else if (lines.Count() <= 3)
             {
                 // it's cid it's cid it's cid
                 // Note: Cid is special because of 2 reasons: when she appears it's the only time in the game
@@ -973,11 +1139,13 @@ namespace clickerheroes.autoplayer
             {
                 i = 1;
                 rectSkipped = true;
-            } else {
+            }
+            else
+            {
                 i = 0;
             }
 
-            for (; i < lines.Count(); i+=2)
+            for (; i < lines.Count(); i += 2)
             {
                 widths.Add(lines[i]);
                 if (i + 1 < lines.Count())

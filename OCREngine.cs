@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using clickerheroes.autoplayer.Forms;
+using clickerheroes.autoplayer.Properties;
 
 namespace clickerheroes.autoplayer
 {
@@ -25,7 +29,7 @@ namespace clickerheroes.autoplayer
         /// <summary>
         /// The total area, in pixels, of this char
         /// </summary>
-        int TotalArea;
+        public int TotalArea;
 
         /// <summary>
         /// The number of alternating white-black groups down the vertical middle
@@ -77,7 +81,8 @@ namespace clickerheroes.autoplayer
         /// <param name="b">The bitmap containing this char</param>
         /// <param name="screentotalArea">The total area of the entire playscreen, used for OCR purposes</param>
         /// <param name="specialcharsenabled">True if "e" and "." can appear in the string </param>
-        public void DoOcr(LockBitmap b, int screentotalArea, bool specialcharsenabled = true) {
+        public void DoOcr(LockBitmap b, int screentotalArea, bool specialcharsenabled = true)
+        {
             int totalArea = 0, lArea = 0, tArea = 0;
             int leftArea = 0, rightArea = 0;
             int groupsDownMiddleVertical = 0;
@@ -115,108 +120,138 @@ namespace clickerheroes.autoplayer
 
                     }
 
-                    
+
                 }
             }
-
-            bool isBlack = false;
-            bool storedWhiteSubgroup = false;
-            for (int j = BoundingRect.Top; j <= BoundingRect.Bottom; j++)
-            {
-                if (b.GetPixel((BoundingRect.Right - BoundingRect.Left) / 2 + BoundingRect.Left, j) == Color.FromArgb(255, 0, 0, 0))
-                {
-                    isBlack = true;
-                    if (storedWhiteSubgroup)
-                    {
-                        groupsDownMiddleVertical++;
-                        storedWhiteSubgroup = false;
-                    }
-                }
-                else
-                {
-                    if (isBlack)
-                    {
-                        storedWhiteSubgroup = true;
-                        isBlack = false;
-                    }
-                }
-            }
-
-            char guessedchar = '~';
-            switch (groupsDownMiddleVertical)
-            {
-                case 0:
-                    if (totalArea > 0.000157 * screentotalArea || specialcharsenabled == false)
-                    {
-                        guessedchar = '1';
-                    }
-                    else
-                    {
-                        guessedchar = '.';
-                    }
-                    break;
-                case 2:
-                    if (totalArea < 0.0003571 * screentotalArea && specialcharsenabled) //(double)rightArea / leftArea < 1.1) //1.1256)
-                    {
-                        guessedchar = 'e';
-                    }
-                    else if (totalArea > 0.8 * charSize)
-                    {
-                        guessedchar = '8';
-                    }
-                    else if (totalArea < 0.71 * charSize)
-                    {
-                        guessedchar = '3';
-                    }
-                    else
-                    {
-                        guessedchar = '5';
-                    }
-                    break;
-                case 1:
-                    if ((double)lArea / tArea > 1.6691) //1.6406 1.7420 1.6933
-                    {
-                        guessedchar = '6';
-                    }
-                    else if ((double)lArea / tArea > 1.3405) //1.2514
-                    {
-                        guessedchar = '4';
-                    }
-                    else if ((double)lArea / tArea <= 1) //0.9769
-                    {
-                        if ((double)midwidth / BoundingRect.Width < 0.7045)
-                        {
-                            guessedchar = '7';
-                        }
-                        else
-                        {
-                            guessedchar = '9';
-                        }
-                    }
-                    else
-                    {
-                        if ((double)rightArea / leftArea > 1.20) // 1.1540)
-                        {
-                            guessedchar = '2';
-                        }
-                        else
-                        {
-                            guessedchar = '0';
-                        }
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-
             TotalArea = totalArea;
-            MaxVerticalGroups = groupsDownMiddleVertical;
-            UpperArea = tArea;
-            LowerArea = lArea;
-            LeftArea = leftArea;
-            RightArea = rightArea;
-            GuessedCharacter = guessedchar;
+
+            var key = string.Format("{0}.{1}.{2}", TotalArea, BoundingRect.Width, BoundingRect.Height);
+            if (OCREngine.CharacterMap.ContainsKey(key))
+            {
+                GuessedCharacter = OCREngine.CharacterMap[key];
+            }
+            else
+            {
+                GuessedCharacter = '\0';
+            }
+            if (GuessedCharacter == '\0' && Settings.Default.doOcrLearning && BoundingRect.Height > 0 && BoundingRect.Width > 0)
+            {
+                var bmp = new Bitmap(BoundingRect.Width, BoundingRect.Height, PixelFormat.Format32bppArgb);
+                for (int i = 0; i < bmp.Width; i++)
+                {
+                    for (int j = 0; j < bmp.Height; j++)
+                    {
+                        bmp.SetPixel(i, j, b.GetPixel(BoundingRect.Left + i, BoundingRect.Top + j));
+                    }
+                }
+                var learn = new OCRLearn(bmp, GuessedCharacter);
+                learn.Owner = Main.Instance;
+                if (learn.ShowDialog() == DialogResult.OK)
+                {
+                    GuessedCharacter = learn.Character;
+                    OCREngine.CharacterMap[key] = GuessedCharacter;
+                    OCREngine.SaveCharacterMap();
+                }
+            }
+
+            //bool isBlack = false;
+            //bool storedWhiteSubgroup = false;
+            //for (int j = BoundingRect.Top; j <= BoundingRect.Bottom; j++)
+            //{
+            //    if (b.GetPixel((BoundingRect.Right - BoundingRect.Left) / 2 + BoundingRect.Left, j) == Color.FromArgb(255, 0, 0, 0))
+            //    {
+            //        isBlack = true;
+            //        if (storedWhiteSubgroup)
+            //        {
+            //            groupsDownMiddleVertical++;
+            //            storedWhiteSubgroup = false;
+            //        }
+            //    }
+            //    else
+            //    {
+            //        if (isBlack)
+            //        {
+            //            storedWhiteSubgroup = true;
+            //            isBlack = false;
+            //        }
+            //    }
+            //}
+
+            //char guessedchar = '~';
+            //switch (groupsDownMiddleVertical)
+            //{
+            //    case 0:
+            //        if (totalArea > 0.000157 * screentotalArea || specialcharsenabled == false)
+            //        {
+            //            guessedchar = '1';
+            //        }
+            //        else
+            //        {
+            //            guessedchar = '.';
+            //        }
+            //        break;
+            //    case 2:
+            //        if (totalArea < 0.0003571 * screentotalArea && specialcharsenabled) //(double)rightArea / leftArea < 1.1) //1.1256)
+            //        {
+            //            guessedchar = 'e';
+            //        }
+            //        else if (totalArea > 0.8 * charSize)
+            //        {
+            //            guessedchar = '8';
+            //        }
+            //        else if (totalArea < 0.71 * charSize)
+            //        {
+            //            guessedchar = '3';
+            //        }
+            //        else
+            //        {
+            //            guessedchar = '5';
+            //        }
+            //        break;
+            //    case 1:
+            //        if ((double)lArea / tArea > 1.6691) //1.6406 1.7420 1.6933
+            //        {
+            //            guessedchar = '6';
+            //        }
+            //        else if ((double)lArea / tArea > 1.3405) //1.2514
+            //        {
+            //            guessedchar = '4';
+            //        }
+            //        else if ((double)lArea / tArea <= 1) //0.9769
+            //        {
+            //            if ((double)midwidth / BoundingRect.Width < 0.7045)
+            //            {
+            //                guessedchar = '7';
+            //            }
+            //            else
+            //            {
+            //                guessedchar = '9';
+            //            }
+            //        }
+            //        else
+            //        {
+            //            if ((double)rightArea / leftArea > 1.20) // 1.1540)
+            //            {
+            //                guessedchar = '2';
+            //            }
+            //            else
+            //            {
+            //                guessedchar = '0';
+            //            }
+            //        }
+            //        break;
+
+            //    default:
+            //        break;
+            //}
+
+            //TotalArea = totalArea;
+            //MaxVerticalGroups = groupsDownMiddleVertical;
+            //UpperArea = tArea;
+            //LowerArea = lArea;
+            //LeftArea = leftArea;
+            //RightArea = rightArea;
+            //GuessedCharacter = guessedchar;
         }
     }
 
@@ -337,6 +372,49 @@ namespace clickerheroes.autoplayer
     /// </summary>
     public class OCREngine
     {
+        internal static Dictionary<string, char> CharacterMap;
+        private static Rectangle _playableArea;
+
+        public static void SetPlayableArea(Rectangle rect)
+        {
+            _playableArea = rect;
+            CharacterMap = new Dictionary<string, char>();
+            var filename = Path.Combine(Application.StartupPath, "OCR", string.Format("{0}.{1}.bin", rect.Width, rect.Height));
+            if (File.Exists(filename))
+            {
+                try
+                {
+                    using (var rdr = new BinaryReader(File.OpenRead(filename)))
+                    {
+                        string key;
+                        char value;
+                        while ((key = rdr.ReadString()) != null)
+                        {
+                            CharacterMap.Add(key, rdr.ReadChar());
+                        }
+                    }
+                }
+                catch { }
+            }
+        }
+
+        public static void SaveCharacterMap()
+        {
+            var filename = Path.Combine(Application.StartupPath, "OCR", string.Format("{0}.{1}.bin", _playableArea.Width, _playableArea.Height));
+            if (!Directory.Exists(Path.GetDirectoryName(filename)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(filename));
+            }
+            using (var wrtr = new BinaryWriter(File.OpenWrite(filename)))
+            {
+                foreach (var key in CharacterMap.Keys.OrderBy(k => k))
+                {
+                    wrtr.Write(key);
+                    wrtr.Write(CharacterMap[key]);
+                }
+            }
+        }
+
         /// <summary>
         /// Performs OCR on a bitmap, reading the Chars and Lines present.
         /// </summary>
@@ -468,7 +546,8 @@ namespace clickerheroes.autoplayer
         /// <param name="boundingRect"></param>
         /// <param name="colors"></param>
         /// <returns></returns>
-        public static double GetBlobDensity(Bitmap b, Rectangle boundingRect, IEnumerable<Color> colors) {
+        public static double GetBlobDensity(Bitmap b, Rectangle boundingRect, IEnumerable<Color> colors)
+        {
             int totalMatches = 0;
 
             try

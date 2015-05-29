@@ -80,5 +80,11 @@ Ascend</Value>
     <Setting Name="maxRunDuration" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">55</Value>
     </Setting>
+    <Setting Name="backgroundWindow" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="doOcrLearning" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
