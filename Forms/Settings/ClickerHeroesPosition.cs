@@ -207,6 +207,8 @@ namespace clickerheroes.autoplayer
             TopRightLbl.ForeColor = Color.Black;
             BotLeftLbl.ForeColor = Color.Black;
             BotRightLbl.ForeColor = Color.Black;
+
+            checkBox1.Checked = Properties.Settings.Default.backgroundWindow;
         }
 
         /// <summary>
@@ -236,10 +238,10 @@ namespace clickerheroes.autoplayer
 
                     if (GameEngine.ValidatePlayableArea())
                     {
-                        Properties.Settings.Default.top = point.X;
-                        Properties.Settings.Default.bot = point.Y;
-                        Properties.Settings.Default.left = rect.Left;
-                        Properties.Settings.Default.right = rect.Right;
+                        Properties.Settings.Default.top = point.Y;
+                        Properties.Settings.Default.bot = point.Y + rect.Bottom - rect.Top;
+                        Properties.Settings.Default.left = point.X;
+                        Properties.Settings.Default.right = point.X + rect.Right - rect.Left;
                         Properties.Settings.Default.Save();
 
                         MessageBox.Show("Settings saved!");
@@ -249,6 +251,12 @@ namespace clickerheroes.autoplayer
             }
             getSettings();
             MessageBox.Show("Can't find game, please try again");
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.backgroundWindow = checkBox1.Checked;
+            Properties.Settings.Default.Save();
         }
     }
 }
