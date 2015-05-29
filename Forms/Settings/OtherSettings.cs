@@ -26,6 +26,7 @@ namespace clickerheroes.autoplayer
             dogcogTxt.Text = Properties.Settings.Default.dogcog.ToString();
             maxRunDurationTxt.Text = Properties.Settings.Default.maxRunDuration.ToString();
             maxRunDurationTxt.Enabled = Properties.Settings.Default.useTaskList;
+            chkDoOcrLearning.Checked = Properties.Settings.Default.doOcrLearning;
         }
 
         private void saveBtn_Click(object sender, EventArgs e)
@@ -60,6 +61,7 @@ namespace clickerheroes.autoplayer
             Properties.Settings.Default.autoSkill = skillChk.Checked;
             Properties.Settings.Default.autoClicking = clickingChk.Checked;
             Properties.Settings.Default.logging = loggingChk.Checked;
+            Properties.Settings.Default.doOcrLearning = chkDoOcrLearning.Checked;
             Properties.Settings.Default.Save();
         }
 

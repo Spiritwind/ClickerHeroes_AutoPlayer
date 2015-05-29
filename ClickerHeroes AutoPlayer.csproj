@@ -65,6 +65,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Forms\OCRLearn.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\OCRLearn.Designer.cs">
+      <DependentUpon>OCRLearn.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\Settings\ClickerHeroesPosition.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -99,6 +105,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Forms\Main.resx">
       <DependentUpon>Main.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\OCRLearn.resx">
+      <DependentUpon>OCRLearn.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\Settings\ClickerHeroesPosition.resx">
       <DependentUpon>ClickerHeroesPosition.cs</DependentUpon>

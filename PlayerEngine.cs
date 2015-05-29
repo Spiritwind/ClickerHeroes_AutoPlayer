@@ -274,7 +274,9 @@ namespace clickerheroes.autoplayer
         /// <summary>
         /// For perf reasons, we also use a shared int across reader/writer threads, which is updated using Interlocked operations
         /// </summary>
-        static int SpecialActionQueueHasValues = 0;
+        public static int SpecialActionQueueHasValues = 0;
+
+        public static DateTime LastLevel = DateTime.Now;
 
         /// <summary>
         /// True if the auto-clicker thread should be active. Updated using interlocked operations
@@ -358,24 +360,28 @@ namespace clickerheroes.autoplayer
                         AddAction(new Action(pt, Modifiers.CTRL));
                         currentMoney -= hs.Hero.GetCostToLevel(heroLevel + 100, heroLevel);
                         heroLevel += 100;
+                        LastLevel = DateTime.Now;
                     }
                     else if (desiredLevel - heroLevel >= 25 && hs.Hero.GetCostToLevel(heroLevel + 25, heroLevel) < currentMoney)
                     {
                         AddAction(new Action(pt, Modifiers.Z));
                         currentMoney -= hs.Hero.GetCostToLevel(heroLevel + 25, heroLevel);
                         heroLevel += 25;
+                        LastLevel = DateTime.Now;
                     }
                     else if (desiredLevel - heroLevel >= 10 && hs.Hero.GetCostToLevel(heroLevel + 10, heroLevel) < currentMoney)
                     {
                         AddAction(new Action(pt, Modifiers.SHIFT));
                         currentMoney -= hs.Hero.GetCostToLevel(heroLevel + 10, heroLevel);
                         heroLevel += 10;
+                        LastLevel = DateTime.Now;
                     }
                     else
                     {
                         AddAction(new Action(pt, 0));
                         currentMoney -= hs.Hero.GetCostToLevel(heroLevel + 1, heroLevel);
                         heroLevel++;
+                        LastLevel = DateTime.Now;
                     }
                 }
 
@@ -540,13 +546,13 @@ namespace clickerheroes.autoplayer
             // Also sets the maximum time the run has to end, as a fail safe if the app gets stuck (example, faulty OCR money read)
             if (nextTaskToPerform == 0)
             {
-                Point[] pts = GameEngine.GetCandyButtons();
-                foreach (Point p in pts)
-                {
-                    AddAction(new Action(p, Modifiers.NONE));
-                }
 
                 maxEndTime = DateTime.Now.AddMinutes(Properties.Settings.Default.maxRunDuration);
+            }
+            Point[] pts = GameEngine.GetCandyButtons();
+            foreach (Point p in pts)
+            {
+                AddAction(new Action(p, Modifiers.NONE));
             }
 
             // Check if the max run time has been reached
@@ -653,13 +659,8 @@ namespace clickerheroes.autoplayer
 
             while (true)
             {
-                using (Bitmap bitmap = new Bitmap(c.Width, c.Height))
+                using (Bitmap bitmap = GameEngine.GetImage(c))
                 {
-                    using (Graphics g = Graphics.FromImage(bitmap))
-                    {
-                        g.CopyFromScreen(new Point(c.Left, c.Top), Point.Empty, c.Size);
-                    }
-
                     if (OCREngine.GetBlobDensity(bitmap, new Rectangle(0, 0, bitmap.Width - 1, bitmap.Height - 1), new Color[] {
                         Color.FromArgb(68, 215, 35)
                     }) > 0.10)
@@ -671,7 +672,7 @@ namespace clickerheroes.autoplayer
                 }
 
                 TryUpgradeHero(ph, 19, 3, curMoney);
-                Thread.Sleep(1000);
+                Thread.Sleep(1200);
                 ph = GameEngine.GetHeroes();
                 curMoney = GameEngine.GetMoney();
             }
