@@ -17,8 +17,11 @@ namespace clickerheroes.autoplayer
 {
     public partial class Main : Form
     {
+        internal static Main Instance;
+
         public Main()
         {
+            Instance = this;
             InitializeComponent();
         }
 
@@ -116,6 +119,12 @@ namespace clickerheroes.autoplayer
 
         private void clickyclicky_Tick(object sender, EventArgs e)
         {
+            while ((DateTime.Now - PlayerEngine.LastLevel).TotalSeconds < 1.2)
+            {
+                Thread.Sleep(100);
+            }
+
+            parsegame.Stop();
             Stopwatch t = new Stopwatch();
             t.Start();
 
@@ -175,6 +184,7 @@ namespace clickerheroes.autoplayer
 
             t.Stop();
             label8.Text = string.Format("{0} ms", t.ElapsedMilliseconds);
+            parsegame.Start();
         }
 
         class GlobalHotkey
