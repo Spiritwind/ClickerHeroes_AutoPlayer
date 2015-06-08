@@ -1,6 +1,6 @@
 # ClickerHeroes AutoPlayer
 An autoplayer for the game Clicker Heroes (http://clickerheroes.com). It can autoclick, activate skills, buy heroes and upgrades, and ascend, and start all over.
-This app is not tested with any other version of clicker heroes like Kongregate. Turn on show individual hero dps, and always use scientific notation when using this tool.
+Turn on show individual hero dps, and always use scientific notation when using this tool.
 
 ## Getting started
 The first thing to do is setting the location of your clicker heroes game:
@@ -12,7 +12,8 @@ The first thing to do is setting the location of your clicker heroes game:
 
 Or if you are running a Windows client (e.g. Steam)
 
-2. Press Detect. We'll ask Windows to find the right area for us.
+2. Decide if you want to be able to run ClickerHeroes behind other windows. This may or may not work, so feel free to try it. If you do want to run it in the background, check the Bkgrd checkbox and cover the window with something else.
+3. Press Detect. We'll ask Windows to find the right area for us.
 
 ## Setting the task list
 The most important thing of this application is the task list. Using this task list you can specify what you want it to do.
@@ -38,13 +39,17 @@ There are also some special commands you can use:
 |ReloadBrowser  | Reload the browsers game window (F5)                        |
 
 ## Other Options
-| Option          | Explanation                                                  |
-| --------------- | ------------------------------------------------------------ |
-|Follow tasklist  | Follow the tasklist (turn of if you only want to autoclick)  |
-|Auto skill usage | Automaticly use skills (when active, or tasklist turned off) |
-|Auto clicking    | Autoclick monsters (when active, or tasklist turned off)     |
-|Log output       | Logs the output, and make screenshots in the logs folder     |
-|Dogcog level     | Level of your Dogcog ancient                                 |
+| Option          | Explanation                                                    |
+| --------------- | ------------------------------------------------------------   |
+|Follow tasklist  | Follow the tasklist (turn of if you only want to autoclick)    |
+|Auto skill usage | Automaticly use skills (when active, or tasklist turned off)   |
+|Auto clicking    | Autoclick monsters (when active, or tasklist turned off)       |
+|Log output       | Logs the output, and make screenshots in the logs folder       |
+|Dogcog level     | Level of your Dogcog ancient                                   |
+|OCR Learning     | Will prompt you when it encounters a character it doesn't know |
 
 ## Special Thanks
 This project is originally started by chthrowaway3 on reddit thread https://www.reddit.com/r/ClickerHeroes/comments/2otl3d/autoplayer_update/
+
+Calculators used to optimize autoplayer behavior were obtained from the following locations:  
+http://www.rivsoft.net/clicker/ancientssoul
