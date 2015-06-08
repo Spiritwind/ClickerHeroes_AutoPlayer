@@ -25,13 +25,15 @@ namespace clickerheroes.autoplayer
     /// </summary>
     class Action
     {
-        public Point p;
-        public Modifiers modifiers;
+        public Point P { get; set; }
+        public Modifiers Modifiers { get; set; }
+        public bool WaitForAnimation { get; set; }
 
-        public Action(Point pt, Modifiers mod)
+        public Action(Point pt, Modifiers mod, bool waitForAnimation = false)
         {
-            p = pt;
-            modifiers = mod;
+            P = pt;
+            Modifiers = mod;
+            WaitForAnimation = waitForAnimation;
         }
     }
 
@@ -277,6 +279,11 @@ namespace clickerheroes.autoplayer
         static int SpecialActionQueueHasValues = 0;
 
         /// <summary>
+        /// This is a shared value that contains the timestamp of the last upgrade animation start
+        /// </summary>
+        public static DateTime LastAnimation { get; set; }
+
+        /// <summary>
         /// True if the auto-clicker thread should be active. Updated using interlocked operations
         /// </summary>
         static int ThreadActive = 0;
@@ -355,34 +362,29 @@ namespace clickerheroes.autoplayer
 
                     if (desiredLevel - heroLevel >= 100 && hs.Hero.GetCostToLevel(heroLevel + 100, heroLevel) < currentMoney)
                     {
-                        AddAction(new Action(pt, Modifiers.CTRL));
+                        AddAction(new Action(pt, Modifiers.CTRL, true));
                         currentMoney -= hs.Hero.GetCostToLevel(heroLevel + 100, heroLevel);
-                        LastLevel = DateTime.Now;
                         heroLevel += 100;
                     }
                     else if (desiredLevel - heroLevel >= 25 && hs.Hero.GetCostToLevel(heroLevel + 25, heroLevel) < currentMoney)
                     {
-                        AddAction(new Action(pt, Modifiers.Z));
+                        AddAction(new Action(pt, Modifiers.Z, true));
                         currentMoney -= hs.Hero.GetCostToLevel(heroLevel + 25, heroLevel);
-                        LastLevel = DateTime.Now;
                         heroLevel += 25;
                     }
                     else if (desiredLevel - heroLevel >= 10 && hs.Hero.GetCostToLevel(heroLevel + 10, heroLevel) < currentMoney)
                     {
-                        AddAction(new Action(pt, Modifiers.SHIFT));
+                        AddAction(new Action(pt, Modifiers.SHIFT, true));
                         currentMoney -= hs.Hero.GetCostToLevel(heroLevel + 10, heroLevel);
-                        LastLevel = DateTime.Now;
                         heroLevel += 10;
                     }
                     else
                     {
-                        AddAction(new Action(pt, 0));
+                        AddAction(new Action(pt, 0, true));
                         currentMoney -= hs.Hero.GetCostToLevel(heroLevel + 1, heroLevel);
-                        LastLevel = DateTime.Now;
                         heroLevel++;
                     }
                 }
-
                 return false;
             }
             else
@@ -459,7 +461,7 @@ namespace clickerheroes.autoplayer
                         {
                             Action nextAction = SpecialActionQueue.Dequeue();
                             // modifiers
-                            switch (nextAction.modifiers)
+                            switch (nextAction.Modifiers)
                             {
                                 case Modifiers.CTRL:
                                     GameEngine.KeyDown(Imports.VK_CONTROL);
@@ -474,9 +476,9 @@ namespace clickerheroes.autoplayer
                                     break;
                             }
                             
-                            GameEngine.DoClick(nextAction.p);
+                            GameEngine.DoClick(nextAction.P);
                             
-                            switch (nextAction.modifiers)
+                            switch (nextAction.Modifiers)
                             {
                                 case Modifiers.CTRL:
                                     GameEngine.KeyUp(Imports.VK_CONTROL);
@@ -489,6 +491,11 @@ namespace clickerheroes.autoplayer
                                     break;
                                 default:
                                     break;
+                            }
+
+                            if (nextAction.WaitForAnimation)
+                            {
+                                LastAnimation = DateTime.Now;
                             }
 
                             Thread.Sleep(20);
@@ -505,6 +512,7 @@ namespace clickerheroes.autoplayer
                     }
                 }
             }
+            
         }
 
         /// <summary>
@@ -722,8 +730,5 @@ namespace clickerheroes.autoplayer
             autoClick = rememberAutoClick;
             useSkils = rememberuseSkils;
         }
-
-
-        public static DateTime LastLevel { get; set; }
     }
 }
