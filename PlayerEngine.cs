@@ -43,7 +43,19 @@ namespace clickerheroes.autoplayer
     /// </summary>
     class AscendTask : Task
     {
-        public AscendTask() : base(-1, -1, -1, false)
+        public AscendTask()
+            : base(-1, -1, -1, false)
+        {
+        }
+    }
+
+    /// <summary>
+    /// A task which will toggle progress
+    /// </summary>
+    class ProgressTask : Task
+    {
+        public ProgressTask()
+            : base(-1, -1, -1, false)
         {
         }
     }
@@ -53,7 +65,8 @@ namespace clickerheroes.autoplayer
     /// </summary>
     class BuyAllÙpgradesTask : Task
     {
-        public BuyAllÙpgradesTask() : base(-1, -1, -1, false)
+        public BuyAllÙpgradesTask()
+            : base(-1, -1, -1, false)
         {
         }
     }
@@ -63,7 +76,8 @@ namespace clickerheroes.autoplayer
     /// </summary>
     class ActiveTask : Task
     {
-        public ActiveTask() : base(-1, -1, -1, false)
+        public ActiveTask()
+            : base(-1, -1, -1, false)
         {
         }
     }
@@ -73,7 +87,8 @@ namespace clickerheroes.autoplayer
     /// </summary>
     class IdleTask : Task
     {
-        public IdleTask() : base(-1, -1, -1, false)
+        public IdleTask()
+            : base(-1, -1, -1, false)
         {
         }
     }
@@ -82,7 +97,8 @@ namespace clickerheroes.autoplayer
     /// A special task, which will reload
     class ReloadBrowserTask : Task
     {
-        public ReloadBrowserTask() : base(-1, -1, -1, false)
+        public ReloadBrowserTask()
+            : base(-1, -1, -1, false)
         {
         }
     }
@@ -132,7 +148,8 @@ namespace clickerheroes.autoplayer
         /// </summary>
         public bool Wait;
 
-        public Task(int heroIndex, int level, int upgrade, bool wait = false) {
+        public Task(int heroIndex, int level, int upgrade, bool wait = false)
+        {
             HeroIndex = heroIndex;
             Level = level;
             Upgrade = upgrade;
@@ -155,7 +172,7 @@ namespace clickerheroes.autoplayer
             Tasks.Clear();
             nextTaskToPerform = 0;
 
-            string[] tasks = s.Split(new char[] {'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries);
+            string[] tasks = s.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
             foreach (string str in tasks)
             {
                 if (str.Trim().StartsWith("//"))
@@ -221,13 +238,16 @@ namespace clickerheroes.autoplayer
                     return string.Format("Unrecognized hero upgrades {0} for task {1}", args[2], str);
                 }
 
-                if (args.Count() < 4 || string.Equals(args[3].Trim(), "false", StringComparison.InvariantCultureIgnoreCase)) {
+                if (args.Count() < 4 || string.Equals(args[3].Trim(), "false", StringComparison.InvariantCultureIgnoreCase))
+                {
                     wait = false;
                 }
                 else if (string.Equals(args[3].Trim(), "true", StringComparison.InvariantCultureIgnoreCase))
                 {
                     wait = true;
-                } else {
+                }
+                else
+                {
                     return string.Format("Expected \"false\" or \"true\" for wait parameter of task: {0}", str);
                 }
 
@@ -238,7 +258,9 @@ namespace clickerheroes.autoplayer
                 else if (string.Equals(args[4].Trim(), "true", StringComparison.InvariantCultureIgnoreCase))
                 {
                     verify = true;
-                } else {
+                }
+                else
+                {
                     return string.Format("Expected \"false\" or \"true\" for verify parameter of task: {0}", str);
                 }
 
@@ -255,7 +277,9 @@ namespace clickerheroes.autoplayer
                 if (verify)
                 {
                     Tasks.Add(new VerifyTask(hindex, level, upgrades, wait));
-                } else {
+                }
+                else
+                {
                     Tasks.Add(new Task(hindex, level, upgrades, wait));
                 }
             }
@@ -475,9 +499,9 @@ namespace clickerheroes.autoplayer
                                 default:
                                     break;
                             }
-                            
+
                             GameEngine.DoClick(nextAction.P);
-                            
+
                             switch (nextAction.Modifiers)
                             {
                                 case Modifiers.CTRL:
@@ -506,13 +530,13 @@ namespace clickerheroes.autoplayer
                 }
                 else
                 {
-                    if ( (autoClick && Properties.Settings.Default.useTaskList) || (!Properties.Settings.Default.useTaskList && Properties.Settings.Default.autoClicking) )
+                    if ((autoClick && Properties.Settings.Default.useTaskList) || (!Properties.Settings.Default.useTaskList && Properties.Settings.Default.autoClicking))
                     {
                         GameEngine.DoClick(GameEngine.GetClickArea());
                     }
                 }
             }
-            
+
         }
 
         /// <summary>
@@ -581,6 +605,13 @@ namespace clickerheroes.autoplayer
                 Ascend(ph, curMoney);
                 nextTaskToPerform = 0;
                 return "Ascending";
+            }
+
+            if (nextTask is ProgressTask)
+            {
+                ActiveProgressMode();
+                nextTaskToPerform++;
+                return "Active Progress Mode";
             }
 
             if (nextTask is BuyAllÙpgradesTask)
@@ -695,6 +726,14 @@ namespace clickerheroes.autoplayer
                 Thread.Sleep(1000);
                 ph = GameEngine.GetHeroes();
                 curMoney = GameEngine.GetMoney();
+            }
+        }
+
+        public static void ActiveProgressMode()
+        {
+            if (!GameEngine.IsProgressModeOn())
+            {
+                AddAction(new Action(GameEngine.GetProgressButton(), Modifiers.NONE));
             }
         }
 
