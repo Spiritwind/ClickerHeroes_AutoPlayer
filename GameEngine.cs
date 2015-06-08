@@ -579,6 +579,11 @@ namespace clickerheroes.autoplayer
         static private Point ClickArea;
 
         /// <summary>
+        /// The box where the gild gift box shows up.
+        /// </summary>
+        static private Rectangle GildGiftArea;
+
+        /// <summary>
         /// When looking at lines in the heroes area, this value is used as a cutoff
         /// to determine if two consecutive lines are Hero-Level or Level-Hero
         /// </summary>
@@ -686,6 +691,11 @@ namespace clickerheroes.autoplayer
             return HeroesArea;
         }
 
+        public static Rectangle GetGildGiftArea()
+        {
+            return GildGiftArea;
+        }
+
         public static Point GetClickArea()
         {
             return ClickArea;
@@ -787,6 +797,11 @@ namespace clickerheroes.autoplayer
             PlayableArea = playableArea;
 
             // Calculate all other coordinates
+            GildGiftArea.X = (int)(PlayableArea.Width * 0.953125 + PlayableArea.Left);
+            GildGiftArea.Y = (int)(PlayableArea.Height * 0.8028 + PlayableArea.Top);
+            GildGiftArea.Width = (int)(PlayableArea.Width * 0.9672 + PlayableArea.Left) - GildGiftArea.X;
+            GildGiftArea.Height = (int)(PlayableArea.Height * 0.8185 + PlayableArea.Top) - GildGiftArea.Y;
+
             ClickArea.X = (int)(PlayableArea.Width * 0.745 + PlayableArea.Left);
             ClickArea.Y = (int)(PlayableArea.Height * 0.508 + PlayableArea.Top);
 
@@ -1270,6 +1285,11 @@ namespace clickerheroes.autoplayer
                 Cursor.Position = p;
                 Imports.mouse_event(Imports.MOUSEEVENTF_LEFTDOWN | Imports.MOUSEEVENTF_LEFTUP, (uint)p.X, (uint)p.Y, 0, 0);
             }
+        }
+
+        public static bool IsGildAvailable()
+        {
+            return OCREngine.GetBlobDensity(GetImage(GetGildGiftArea()), new Rectangle(0,0, GetGildGiftArea().Width - 1, GetGildGiftArea().Height - 1), new List<Color>() { Color.FromArgb(255, 123,145) }) > 0.10;
         }
     }
 }
