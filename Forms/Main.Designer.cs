@@ -70,7 +70,7 @@
             // 
             // parsegame
             // 
-            this.parsegame.Interval = 1000;
+            this.parsegame.Interval = 500;
             this.parsegame.Tick += new System.EventHandler(this.clickyclicky_Tick);
             // 
             // label8
@@ -148,7 +148,7 @@
             // 
             // useskills
             // 
-            this.useskills.Interval = 2000;
+            this.useskills.Interval = 152000;
             this.useskills.Tick += new System.EventHandler(this.useskills_Tick);
             // 
             // label13

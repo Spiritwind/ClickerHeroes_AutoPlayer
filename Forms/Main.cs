@@ -278,14 +278,14 @@ namespace clickerheroes.autoplayer
 
             // Golden Clicks
             PlayerEngine.PressKey(Imports.VK_8);
-            PlayerEngine.PressKey(Imports.VK_5);
-            PlayerEngine.PressKey(Imports.VK_4);
-
-            // DPS
-            // PlayerEngine.PressKey(Imports.VK_1);
-            PlayerEngine.PressKey(Imports.VK_2);
             PlayerEngine.PressKey(Imports.VK_3);
+            PlayerEngine.PressKey(Imports.VK_1);
+            PlayerEngine.PressKey(Imports.VK_2);
+            PlayerEngine.PressKey(Imports.VK_4);
+            PlayerEngine.PressKey(Imports.VK_5);
             PlayerEngine.PressKey(Imports.VK_7);
+
+            PlayerEngine.PressKey(Imports.VK_9);
 
             if (!GameEngine.IsProgressModeOn())
             {
