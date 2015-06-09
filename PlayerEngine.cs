@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -188,6 +188,12 @@ namespace clickerheroes.autoplayer
                     continue;
                 }
 
+               if (str.Trim().Equals("Progress"))
+                {
+                   Tasks.Add(new ProgressTask());
+                    continue;
+                }
+
                 if (str.Trim().Equals("BuyAllUpgrades"))
                 {
                     Tasks.Add(new BuyAllÙpgradesTask());
@@ -203,12 +209,6 @@ namespace clickerheroes.autoplayer
                 if (str.Trim().Equals("Idle"))
                 {
                     Tasks.Add(new IdleTask());
-                    continue;
-                }
-
-                if (str.Trim().Equals("Progress"))
-                {
-                   Tasks.Add(new ProgressTask());
                     continue;
                 }
 
@@ -539,12 +539,16 @@ namespace clickerheroes.autoplayer
                     if ((autoClick && Properties.Settings.Default.useTaskList) || (!Properties.Settings.Default.useTaskList && Properties.Settings.Default.autoClicking))
                     {
                         GameEngine.DoClick(GameEngine.GetClickArea());
+                        Point[] pts = GameEngine.GetCandyButtons();
+                        foreach (Point p in pts)
+                        {
+                            AddAction(new Action(p, Modifiers.NONE));
+                        }
                     }
                 }
             }
 
         }
-
         /// <summary>
         /// Sends a keypress
         /// </summary>
@@ -593,11 +597,6 @@ namespace clickerheroes.autoplayer
             if (nextTaskToPerform == 0)
             {
                 maxEndTime = DateTime.Now.AddMinutes(Properties.Settings.Default.maxRunDuration);
-            }
-            Point[] pts = GameEngine.GetCandyButtons();
-            foreach (Point p in pts)
-            {
-                AddAction(new Action(p, Modifiers.NONE));
             }
 
             // Check if the max run time has been reached
