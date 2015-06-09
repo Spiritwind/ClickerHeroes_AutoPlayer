@@ -206,6 +206,12 @@ namespace clickerheroes.autoplayer
                     continue;
                 }
 
+               if (str.Trim().Equals("Progress"))
+                {
+                   Tasks.Add(new ProgressTask());
+                    continue;
+                }
+
                 if (str.Trim().Equals("ReloadBrowser"))
                 {
                     Tasks.Add(new ReloadBrowserTask());
