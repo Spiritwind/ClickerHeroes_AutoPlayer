@@ -206,7 +206,7 @@ namespace clickerheroes.autoplayer
                     continue;
                 }
 
-               if (str.Trim().Equals("Progress"))
+                if (str.Trim().Equals("Progress"))
                 {
                    Tasks.Add(new ProgressTask());
                     continue;
